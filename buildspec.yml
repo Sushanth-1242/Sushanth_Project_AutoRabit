@@ -11,10 +11,7 @@ phases:
       - cp deployment/appspec.yml .
       # Copy deployment scripts to root-level scripts folder
       - cp -r deployment/scripts ./scripts
-      # Copy source code
-      - cp -r src ./src
 artifacts:
   files:
     - appspec.yml
     - scripts/**/*
-    - src/**/*
