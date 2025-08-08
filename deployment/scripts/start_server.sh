@@ -39,15 +39,16 @@ docker pull $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
 
 # Run new container
 echo "Starting new container..."
-docker run -d \
-    --name $CONTAINER_NAME \
-    --restart unless-stopped \
-    -p $APP_PORT:$APP_PORT \
-    # --log-driver=awslogs \
-    # --log-opt awslogs-group="/aws/ec2/docker" \
-    # --log-opt awslogs-region=$AWS_REGION \
-    # --log-opt awslogs-stream="$INSTANCE_ID-$CONTAINER_NAME" \
-    $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+ docker run -d --name $CONTAINER_NAME --restart unless-stopped -p 80:$APP_PORT 461008418898.dkr.ecr.us-east-1.amazonaws.com/flask/app:latest
+# docker run -d \
+#     --name $CONTAINER_NAME \
+#     --restart unless-stopped \
+#     -p 80:$APP_PORT \
+#     # --log-driver=awslogs \
+#     # --log-opt awslogs-group="/aws/ec2/docker" \
+#     # --log-opt awslogs-region=$AWS_REGION \
+#     # --log-opt awslogs-stream="$INSTANCE_ID-$CONTAINER_NAME" \
+#     $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
 
 # Wait for container to start
 echo "Waiting for container to start..."
