@@ -14,9 +14,9 @@ sudo systemctl enable docker
 sudo usermod -a -G docker ec2-user
 
 # Install AWS CLI v2
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
+# curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+# unzip awscliv2.zip
+# sudo ./aws/install
 
 # Install jq for JSON parsing
 sudo yum install -y jq
