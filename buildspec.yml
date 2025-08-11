@@ -1,9 +1,34 @@
 version: 0.2
 
+env:
+  shell: bash
+  variables:
+    AWS_DEFAULT_REGION: "us-east-1"
+    ECR_REPOSITORY_NAME: "flask/app"
+    IMAGE_TAG: "latest"
+
 phases:
   install:
+    runtime-versions:
+      python: 3.9
     commands:
-      - echo "Installing dependencies if any.."
+      - echo "Docker version:" && docker --version
+
+  pre_build:
+    commands:
+      - echo "Checking AWS credentials..."
+      - aws sts get-caller-identity
+      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - ECR_REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME
+      - IMAGE_URI=$ECR_REPOSITORY_URI:$IMAGE_TAG
+      - echo "ECR Repository URI:" $ECR_REPOSITORY_URI
+      - echo "Image URI:" $IMAGE_URI
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      # Optional: Login to Docker Hub to avoid rate limits (if you have credentials)
+      # - echo "Logging in to Docker Hub..."
+      # - echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
+
   build:
     commands:
       - echo "Preparing artifact for CodeDeploy"
@@ -11,7 +36,25 @@ phases:
       - cp deployment/appspec.yml .
       # Copy deployment scripts to root-level scripts folder
       - cp -r deployment/scripts ./scripts
+      - echo "Starting Docker build process..."
+      - cd $CODEBUILD_SRC_DIR/flask-app
+      - echo "Building Docker image..."
+      - docker build -t $ECR_REPOSITORY_NAME:$IMAGE_TAG . || { echo "Docker build failed"; exit 1; }
+      - echo "Tagging image for ECR..."
+      - docker tag $ECR_REPOSITORY_NAME:$IMAGE_TAG $IMAGE_URI
+
+  post_build:
+    commands:
+      - echo "Pushing image to ECR..."
+      - docker push $IMAGE_URI || { echo "Docker push failed"; exit 1; }
+      - echo "Cleaning up local images..."
+      - docker rmi $ECR_REPOSITORY_NAME:$IMAGE_TAG || true
+      - docker rmi $IMAGE_URI || true
+      - echo "Build completed successfully!"
+      - echo "Docker image pushed to:" $IMAGE_URI
+
 artifacts:
   files:
     - appspec.yml
     - scripts/**/*
+  name: build-artifacts
