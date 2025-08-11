@@ -28,6 +28,7 @@ AWS EC2 – Hosting environment for the application.
 bash
 Copy
 Edit
+"
 .
 ├── app/                     # Flask application source code
 │   ├── app.py               # Main application file
@@ -41,6 +42,8 @@ Edit
 ├── buildspec.yml            # AWS CodeBuild instructions
 ├── appspec.yml              # AWS CodeDeploy instructions
 └── README.md                # Project documentation
+
+"
 ⚙️ Prerequisites
 Before using this repository, ensure you have:
 
